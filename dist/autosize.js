@@ -3,7 +3,24 @@
 	typeof define === 'function' && define.amd ? define(factory) :
 	(global = global || self, global.autosize = factory());
 }(this, (function () {
-	var assignedElements = new Map();
+	var assignedElements = new Map(); // Taken from https://dev.to/jeetvora331/throttling-in-javascript-easiest-explanation-1081
+
+	function throttle(mainFunction, delay) {
+	  var timerFlag = null; // Variable to keep track of the timer
+	  // Returning a throttled version 
+
+	  return function () {
+	    if (timerFlag === null) {
+	      // If there is no timer currently running
+	      mainFunction.apply(void 0, [].slice.call(arguments)); // Execute the main function 
+
+	      timerFlag = setTimeout(function () {
+	        // Set a timer to clear the timerFlag after the specified delay
+	        timerFlag = null; // Clear the timerFlag to allow the main function to be executed again
+	      }, delay);
+	    }
+	  };
+	}
 
 	function assign(ta) {
 	  if (!ta || !ta.nodeName || ta.nodeName !== 'TEXTAREA' || assignedElements.has(ta)) return;
@@ -120,7 +137,7 @@
 	    });
 	  }
 
-	  var handleInput = function () {
+	  var handleInput = throttle(function () {
 	    var previousValue = ta.value;
 	    return function () {
 	      setHeight({
@@ -131,7 +148,7 @@
 	      });
 	      previousValue = ta.value;
 	    };
-	  }();
+	  }(), 300);
 
 	  var destroy = function (style) {
 	    ta.removeEventListener('autosize:destroy', destroy);
